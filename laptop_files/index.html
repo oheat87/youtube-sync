@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+      content="width=device-width, initial-scale=1" />
+    <title>button test</title>
+  </head>
+  
+  <body>
+      
+    <h2 id='headline'>invisible button and iframe tag test</h2>
+    <div>
+      <div id='player'></div>
+      <!--
+      <iframe id='video_frame' type='text/html' width='640' height='360' src='https://www.youtube.com/embed/ihLiDkAdmQ4' title='youtube video load test' allowfullscreen
+          style="border:none"></iframe>
+      -->
+    </div>
+    <button type='button' onclick="showIframe()" style="display:none">show iframe</button>
+    <button type='button' onclick="hideIframe()" style="display:none">hide iframe</button>
+    <button id='fullScreenButton' type='button' onclick="videoFullScreen()" style="display:none">show iframe in fullscreen</button>
+    <!-- ul for websocket api test -->
+    <ul id='ws_container'></ul>
+
+    <script>
+        //loging func
+        function logToPage(msg){
+          var tag = document.createElement("li");
+          var text = document.createTextNode(msg);
+          tag.appendChild(text);
+          var element = document.getElementById("ws_container");
+          element.appendChild(tag);
+        }
+        //rtt
+        var avg_rtt;
+        var avg_rtt_value_valid=false;
+
+        //video synchronizing flag
+        var iframe_video_state=false;
+        var phone_video_state=false;
+        var play_probe_mode=true;
+        const IFRAME_CAN_PLAY="iframe_can_play";
+        //var iframe_video_started=false;
+
+        function resetFlags(){
+          iframe_video_state=false;
+          phone_video_state=false;
+          play_probe_mode=true;
+        }
+
+        // youtube iframe api load part
+        var tag = document.createElement('script');
+        
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  
+        // make iframe player that can be manipulated by youtub api
+        var player;
+        function onYouTubeIframeAPIReady() {
+          player = new YT.Player('player', {
+            videoId: 'qoO0hhpAqfY',
+            events: {
+              'onReady': onPlayerReady,
+              'onStateChange': onPlayerStateChange
+            }
+          });
+        }
+        function onPlayerReady(event){
+          // to control iframe video by code
+          player.mute();
+          b=document.getElementById('fullScreenButton');
+          b.dispatchEvent(new MouseEvent('click'));
+          // p=document.getElementById('player');
+          // p.allow='fullscreen';
+          // p.requestFullscreen();
+        }
+        function onPlayerStateChange(event){
+          if(event.data == YT.PlayerState.CUED){
+            /*if(!iframe_video_started){
+              iframe_video_started=true;
+              player.pauseVideo();
+            }*/
+          }
+          else if(event.data == YT.PlayerState.PLAYING){
+            logToPage("video play");
+            if(play_probe_mode){
+              player.pauseVideo();
+              iframe_video_state=true;
+              ws.send(IFRAME_CAN_PLAY);
+              if(phone_video_state){
+                setTimeout(()=>{
+                  logToPage("video will be played by timeout");
+                  play_probe_mode=false;
+                  player.playVideo();
+                },avg_rtt/2);
+              }
+            }
+            else{
+              /*iframe_video_state=false;
+              phone_video_state=false;
+              play_probe_mode=true;*/
+            }
+          }
+          else if(event.data == YT.PlayerState.PAUSED){
+            logToPage("video paused");
+            logToPage(`on paused: iframe: ${iframe_video_state}, phone: ${phone_video_state}, probe: ${play_probe_mode}`)
+            /*if(play_probe_mode){
+              //play_probe_mode=false;
+            }
+            else{
+              iframe_video_state=false;
+              phone_video_state=false;
+              play_probe_mode=true;
+            }*/
+          }
+        }
+        function videoFullScreen(){
+          p=document.getElementById('player');
+          p.requestFullscreen();
+        }
+        window.focus();
+        
+
+
+        // websocket communication part
+        var player_id='player'; 
+        const SHUT_SERVER= 'SHUT_SERVER';
+        const RTT_REPLY= 'RTT_REPLY';
+        
+  
+        function getWebSocket(){
+          var ws = new WebSocket('ws://127.0.0.1:3500');
+          ws.onmessage=(event)=>{
+            var data;
+            try{
+              data= JSON.parse(event.data);
+            }
+            catch(e) {
+              logToPage(`recieved msg: ${event.data}`);
+            }
+            
+            // console.log(data);
+            switch(data.type){
+              case "show_hide":
+                switch(data.command){
+                  case "show":
+                    console.log('show video frame command received');
+                    showIframe();
+                    break;
+                  case "hide":
+                  console.log('hide video frame command received');
+                    hideIframe();
+                    break;
+                  default:
+                    console.error('unsupported show_hide command',data.command);
+                }
+                break;
+              case "shut_window":
+                ws.send(SHUT_SERVER);
+                ws.close();
+                window.close();
+                break;
+              case "set_video":
+                //iframe_video_started=false;
+                //setVideoSource(getVideoIdFromURL(data.url));
+                //player.loadVideoById(getVideoIdFromURL(data.url),0,'large');
+                //player.pauseVideo();
+                /*iframe_video_state=false;
+                phone_video_state=false;
+                play_probe_mode=true;*/
+                resetFlags();
+                player.cueVideoById(getVideoIdFromURL(data.url));
+                break;
+              case "play":
+                resetFlags();
+                player.playVideo();
+                break;
+              case "pause":
+                resetFlags();
+                player.pauseVideo();
+                /*if(!play_probe_mode){
+                  iframe_video_state=false;
+                  phone_video_state=false;
+                  play_probe_mode=true;
+                }*/
+                break;
+              case "seek":
+                resetFlags();
+                player.pauseVideo();
+                player.seekTo(parseFloat(data.time));
+                break;
+              case "rtt_measure":
+                ws.send(RTT_REPLY);
+                break;
+              case "avg_rtt_value":
+                avg_rtt=data.value;
+                avg_rtt_value_valid=true;
+                //alert(avg_rtt);
+                break;
+              case "phone_can_play":
+                phone_video_state=true;
+                if(play_probe_mode){
+                  if(iframe_video_state){
+                    logToPage("video will be played by plain function call");
+                    play_probe_mode=false;
+                    player.playVideo();
+                  }
+                }
+                break;
+              case "phone_paused":
+                phone_video_state=false;
+                break;
+              default:
+                console.error('unsupported event',data.type);
+                console.log(data)
+            }
+          };
+          return ws;
+        }     
+        //-------
+        function showIframe(){
+          var video_frame= document.getElementById(player_id);
+          video_frame.style.display='inline';
+          return;
+        }
+        function hideIframe(){
+          var video_frame= document.getElementById(player_id);
+          video_frame.style.display='none';
+          return;
+        }
+        function setVideoSource(video_id){
+          var video_frame= document.getElementById(player_id);
+          video_frame.src='https://www.youtube.com/embed/'+video_id;
+        }
+        function getVideoIdFromURL(url){
+          if(url.indexOf('youtu.be')>=0 || url.indexOf('embed')>=0){
+            let arr=url.split('/');
+            return arr[arr.length-1];
+          }
+          else{
+            let index= url.indexOf('v=')+2;
+            return url.substring(index,url.length);
+          }
+        }
+        ws=getWebSocket();
+    </script>
+  </body>
+</html>
