@@ -56,7 +56,8 @@ class safeQueue:
         return len(self.q)==0
 def open_video_page():
     time.sleep(0.5)
-    html_path=os.path.join(os.path.split(os.path.split(os.getcwd())[0])[0],'index.html')
+    #html_path=os.path.join(os.path.split(os.path.split(os.getcwd())[0])[0],'index.html')
+    html_path='index.html'
     webbrowser.open(html_path)
     
 
