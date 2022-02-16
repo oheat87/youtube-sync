@@ -15,7 +15,7 @@ it's basically playing 2 identical videos on your phone and laptop simultaneousl
 6. touch the three dots button at the right down corner of your video, select "Share", and select the "sockettest" app.
 ![youtube_sync_app_screen_2](https://user-images.githubusercontent.com/39119468/154293610-56a15259-1561-42c9-af51-6c9d0dfa9d00.JPG)
 ![youtube_sync_app_screen_3](https://user-images.githubusercontent.com/39119468/154293638-88cd2509-b04a-4e1f-aa94-ba4d14dcb4bc.JPG)
-![youtube_sync_app_screen_4](https://user-images.githubusercontent.com/39119468/154293780-8892db38-c09a-480a-8379-7450237c8589.JPG)
+![youtube_sync_app_screen_4](https://user-images.githubusercontent.com/39119468/154294953-d611b4ef-4ebe-4dbf-a81c-ae917fe49f9d.JPG)
 
 7. type your laptop(or desktop) to ip box and type "3000" to port number box.
 
