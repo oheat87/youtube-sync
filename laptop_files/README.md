@@ -9,6 +9,6 @@
 >Also, logs for debugging will be displayed the iframe tag.
 
 * * *
-### the browser screen you will see
+### - the browser screen you will see
 
 ![capture](https://user-images.githubusercontent.com/39119468/154277779-c738450c-f86d-43da-a8c0-ac90a2f9f3da.JPG)
