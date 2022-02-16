@@ -17,7 +17,7 @@ it's basically playing 2 identical videos on your phone and laptop simultaneousl
 ![youtube_sync_app_screen_3](https://user-images.githubusercontent.com/39119468/154293638-88cd2509-b04a-4e1f-aa94-ba4d14dcb4bc.JPG)
 ![youtube_sync_app_screen_4](https://user-images.githubusercontent.com/39119468/154294953-d611b4ef-4ebe-4dbf-a81c-ae917fe49f9d.JPG)
 
-7. type your laptop(or desktop) ip adress to ip box and type "3000" to port number box.
+7. type your laptop(or desktop)'s "Local" ip adress to ip box and type "3000" to port number box.
 #### check this web site: https://lifehacker.com/how-to-find-your-local-and-external-ip-address-5833108
 
 8. touch the "set video" button of your app
